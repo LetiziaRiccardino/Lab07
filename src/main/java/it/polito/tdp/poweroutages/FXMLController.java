@@ -25,7 +25,7 @@ public class FXMLController {
     private URL location;
 
     @FXML // fx:id="cmbNerc"
-    private ComboBox<String> cmbNerc; // Value injected by FXMLLoader
+    private ComboBox<Nerc> cmbNerc; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtYears"
     private TextField txtYears; // Value injected by FXMLLoader
@@ -43,19 +43,40 @@ public class FXMLController {
     	
     	txtResult.clear();
     	
-    	Integer maxOre =Integer.parseInt(txtHours.getText()); //trasformo in minuti
-    	Integer maxAnni= Integer.parseInt(txtYears.getText());
-    	
-    	String n= cmbNerc.getValue();
-    	Nerc nerc=null;
-    	for(Nerc nr: this.model.getNercList())
-    		if(n.equals(nr.getValue()))
-    			nerc= nr;
-    	
-    	List<Outages> result= model.trovaSequenza(nerc, maxOre, maxAnni);
-    	for(Outages o: result) {
+    	try {
+    		//controllo sul nerc
+    		Nerc nerc= cmbNerc.getSelectionModel().getSelectedItem();
+    		if(nerc==null) {
+    			txtResult.setText("select a NERC");
+    			return;
+    		}
+    		//controllo su ore e anni
+    		Integer maxOre =Integer.parseInt(txtHours.getText()); 
+    		Integer maxAnni= Integer.parseInt(txtYears.getText());
+    		if(maxOre<=0 || maxAnni<=0) {
+    			txtResult.setText("Inserire un numero di anni e numero di ore maggiore di 0");
+    			return;
+    		}
+    		    		
+    		txtResult.clear();
+    		List<Outages> result= model.getWorstCase(nerc, maxOre, maxAnni);
+    		for(Outages o: result) {
     		txtResult.appendText(o.toString()+ "\n");
+    		}
+    		
+    		
+    		
+    	}catch(NumberFormatException e) {
+    		e.printStackTrace();
+    		txtResult.setText("inserire nuemro valido di ore o anni");
     	}
+    	
+    	
+    	
+    	
+    	
+    	
+    	
     	
     	
     	
@@ -76,8 +97,8 @@ public class FXMLController {
     public void setModel(Model model) {
     	this.model = model;
     	
-    	for(Nerc n: model.getNercList())
-    		cmbNerc.getItems().add(n.getValue());
+    	List<Nerc> nercList= model.getNercList();
+    	cmbNerc.getItems().addAll(nercList);
     	
     }
     

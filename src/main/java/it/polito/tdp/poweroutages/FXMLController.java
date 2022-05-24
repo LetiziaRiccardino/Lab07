@@ -5,9 +5,11 @@
 package it.polito.tdp.poweroutages;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import it.polito.tdp.poweroutages.model.Model;
 import it.polito.tdp.poweroutages.model.Nerc;
+import it.polito.tdp.poweroutages.model.Outages;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
@@ -23,7 +25,7 @@ public class FXMLController {
     private URL location;
 
     @FXML // fx:id="cmbNerc"
-    private ComboBox<Nerc> cmbNerc; // Value injected by FXMLLoader
+    private ComboBox<String> cmbNerc; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtYears"
     private TextField txtYears; // Value injected by FXMLLoader
@@ -38,7 +40,25 @@ public class FXMLController {
     
     @FXML
     void doRun(ActionEvent event) {
+    	
     	txtResult.clear();
+    	
+    	Integer maxOre =Integer.parseInt(txtHours.getText()); //trasformo in minuti
+    	Integer maxAnni= Integer.parseInt(txtYears.getText());
+    	
+    	String n= cmbNerc.getValue();
+    	Nerc nerc=null;
+    	for(Nerc nr: this.model.getNercList())
+    		if(n.equals(nr.getValue()))
+    			nerc= nr;
+    	
+    	List<Outages> result= model.trovaSequenza(nerc, maxOre, maxAnni);
+    	for(Outages o: result) {
+    		txtResult.appendText(o.toString()+ "\n");
+    	}
+    	
+    	
+    	
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -52,7 +72,14 @@ public class FXMLController {
         txtResult.setStyle("-fx-font-family: monospace");
     }
     
+    
     public void setModel(Model model) {
     	this.model = model;
+    	
+    	for(Nerc n: model.getNercList())
+    		cmbNerc.getItems().add(n.getValue());
+    	
     }
+    
+    
 }
